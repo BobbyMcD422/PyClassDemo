@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Classroom Demo{% endblock %}
+
+{% block content %}
+<section class="dashboard-grid">
+  <div class="hero-panel">
+    <p class="eyebrow">Welcome back</p>
+    <h1>{{ user.first_name or user.username }}</h1>
+    <p>
+      Signed in as <strong>{{ user.username }}</strong>. This page was generated
+      by Flask after reading your fake account from PostgreSQL.
+    </p>
+  </div>
+
+  <div class="stat-card">
+    <span>Favorite color</span>
+    <strong class="color-stat">
+      <span class="color-dot" style="background: {{ user.favorite_color }}"></span>
+      {{ user.favorite_color }}
+    </strong>
+  </div>
+
+  <div class="stat-card">
+    <span>Selected layout</span>
+    <strong>
+      {% if latest_submission %}
+        {{ latest_submission.layout_choice }}
+      {% else %}
+        Not chosen yet
+      {% endif %}
+    </strong>
+  </div>
+
+  <div class="stat-card">
+    <span>Class votes submitted</span>
+    <strong>{{ vote_count }}</strong>
+  </div>
+</section>
+
+<section class="content-grid">
+  <form class="card form-card" method="post" action="{{ url_for('update_profile') }}">
+    <h2>Personalize your dashboard</h2>
+    <p class="muted">This updates your row in the users table, then reloads the page.</p>
+
+    <label for="first_name">First name</label>
+    <input id="first_name" name="first_name" type="text" maxlength="40" value="{{ user.first_name }}" placeholder="Example: Jordan" required>
+
+    <label for="favorite_color">Favorite color</label>
+    <input id="favorite_color" name="favorite_color" type="color" value="{{ user.favorite_color }}">
+
+    <button type="submit">Update my profile</button>
+  </form>
+
+  <form class="card form-card" method="post" action="{{ url_for('dashboard') }}">
+    <h2>Submit a design choice</h2>
+    <p class="muted">This form sends data from the browser to Flask, then Flask saves it in PostgreSQL.</p>
+
+    <label for="layout_choice">Favorite layout</label>
+    <select id="layout_choice" name="layout_choice">
+      <option>Cards</option>
+      <option>List</option>
+      <option>Grid</option>
+    </select>
+
+    <label for="comment">Short fake comment</label>
+    <textarea id="comment" name="comment" rows="4" maxlength="160" placeholder="Example: Cards make the page easier to scan."></textarea>
+
+    <button type="submit">Save to PostgreSQL</button>
+  </form>
+
+  <aside class="card lesson-card">
+    <h2>What is happening?</h2>
+    <ol>
+      <li>The browser opens <strong>localhost:5000</strong>.</li>
+      <li>Docker sends that request to the Flask web container.</li>
+      <li>Flask reads and writes rows in the PostgreSQL db container.</li>
+      <li>Jinja turns the result into HTML for the browser.</li>
+    </ol>
+
+    <form method="post" action="{{ url_for('reset_demo') }}">
+      <button class="secondary-button" type="submit">Reset classroom submissions</button>
+    </form>
+  </aside>
+</section>
+{% endblock %}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Classroom Demo{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <!-- Frontend: this HTML and CSS is what the browser displays. -->
+    <header class="site-header">
+      <a class="brand" href="{{ url_for('dashboard') }}">Design Class Demo</a>
+      <nav>
+        {% if session.get("user_id") %}
+          <a href="{{ url_for('dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('submissions') }}">Submissions</a>
+          <a href="{{ url_for('logout') }}">Log out</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

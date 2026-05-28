@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Submissions - Classroom Demo{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <p class="eyebrow">PostgreSQL rows</p>
+  <h1>Recent class submissions</h1>
+  <p>Every row below came from a student form submission saved in the database container.</p>
+</section>
+
+<section class="card table-card">
+  {% if submissions %}
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Color</th>
+          <th>Layout</th>
+          <th>Comment</th>
+          <th>Saved At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in submissions %}
+          <tr>
+            <td>{{ item.first_name or item.username }} <span class="muted">({{ item.username }})</span></td>
+            <td>
+              <span class="color-cell">
+                <span class="color-dot" style="background: {{ item.favorite_color }}"></span>
+                {{ item.favorite_color }}
+              </span>
+            </td>
+            <td>{{ item.layout_choice }}</td>
+            <td>{{ item.comment or "No comment" }}</td>
+            <td>{{ item.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty-state">No submissions yet. Go back to the dashboard and save the first one.</p>
+  {% endif %}
+</section>
+{% endblock %}

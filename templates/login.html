@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Log In - Classroom Demo{% endblock %}
+
+{% block content %}
+<section class="login-layout">
+  <div class="intro-panel">
+    <p class="eyebrow">Full-stack classroom demo</p>
+    <h1>Turn a design page into a working web app.</h1>
+    <p>
+      Students log in with assigned fake accounts, personalize their dashboard,
+      and see that Flask saved their choices in PostgreSQL.
+    </p>
+  </div>
+
+  <form class="card form-card" method="post" action="{{ url_for('login') }}">
+    <h2>Demo Login</h2>
+    <p class="muted">Use your assigned user number and classroom password.</p>
+
+    {% if error %}
+      <p class="error-message">{{ error }}</p>
+    {% endif %}
+
+    <label for="username">Username</label>
+    <input id="username" name="username" type="text" autocomplete="off" required>
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required>
+
+    <button type="submit">Log in</button>
+  </form>
+</section>
+{% endblock %}
