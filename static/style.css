@@ -179,6 +179,31 @@ input[type="color"] {
   padding: 6px;
 }
 
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  color: var(--muted);
+  width: fit-content;
+}
+
+.checkbox-row label {
+  display: inline;
+  margin: 0;
+  font-weight: 700;
+}
+
+.checkbox-row input[type="checkbox"] {
+  display: inline;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 18px;
+}
+
 input:focus,
 select:focus,
 textarea:focus {
