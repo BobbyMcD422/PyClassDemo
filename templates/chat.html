@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - Classroom Demo{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <p class="eyebrow">GET and POST</p>
+  <h1>Class chat</h1>
+  <p>
+    This page shows how form data moves from the browser to Flask, gets saved in
+    PostgreSQL, and comes back as generated HTML.
+  </p>
+</section>
+
+<section class="chat-grid">
+  <form class="card form-card" method="post" action="{{ url_for('chat') }}">
+    <h2>POST /chat</h2>
+    <p class="muted">The browser sends this message to Flask. Flask inserts it into the messages table.</p>
+
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="4" maxlength="180" placeholder="Type a short classroom message." required></textarea>
+
+    <button type="submit">Send message</button>
+  </form>
+
+  <aside class="card lesson-card">
+    <h2>GET /chat</h2>
+    <ol>
+      <li>Flask reads recent messages from PostgreSQL.</li>
+      <li>Jinja places those messages into chat.html.</li>
+      <li>The browser receives a new HTML page.</li>
+      <li>Refreshing the page runs the GET request again.</li>
+    </ol>
+  </aside>
+</section>
+
+<section class="chat-list">
+  {% if messages %}
+    {% for item in messages %}
+      <article class="chat-message">
+        <div class="message-meta">
+          <span class="color-dot" style="background: {{ item.favorite_color }}"></span>
+          <strong>{{ item.first_name or item.username }}</strong>
+          <span>{{ item.created_at.strftime("%Y-%m-%d %H:%M") }}</span>
+        </div>
+        <p>{{ item.message }}</p>
+      </article>
+    {% endfor %}
+  {% else %}
+    <div class="card">
+      <p class="empty-state">No chat messages yet. Send the first POST request above.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

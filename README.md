@@ -57,6 +57,15 @@ user30 / brownshape
 
 After students log in, they can enter their first name and choose a favorite color. That updates their row in PostgreSQL and refreshes the dashboard.
 
+The app also includes a simple chat page:
+
+```text
+GET /chat  -> Flask reads messages from PostgreSQL and renders chat.html
+POST /chat -> Flask saves a new message, then redirects back to GET /chat
+```
+
+This is meant to make browser requests, backend routes, database rows, and generated HTML visible in one classroom-friendly flow.
+
 ## Useful Docker Commands
 
 ```bash
@@ -67,13 +76,13 @@ docker compose down
 docker compose down -v
 ```
 
-`docker compose down -v` removes the PostgreSQL volume, so the saved submissions disappear too.
+`docker compose down -v` removes the PostgreSQL volume, so the saved submissions and chat messages disappear too.
 
 ## What The Containers Do
 
 The `web` container runs Flask. Flask receives browser requests, talks to the database, and renders Jinja HTML templates.
 
-The `db` container runs PostgreSQL. It stores the fake users and the class form submissions.
+The `db` container runs PostgreSQL. It stores the fake users, class form submissions, and chat messages.
 
 The Docker network lets the `web` container talk to the `db` container using the hostname `db`.
 
@@ -81,7 +90,7 @@ Port `5000` lets your browser reach the Flask app. Docker maps `localhost:5000` 
 
 ## Classroom Reset
 
-After logging in, use the reset button on the dashboard to clear all submissions. This is only for quickly resetting the demo between classes.
+After logging in, use the reset button on the dashboard to clear all submissions and chat messages. Student names, colors, usernames, and passwords stay in place. This is only for quickly resetting the demo between classes.
 
 ## Cloudflare Tunnel Note
 

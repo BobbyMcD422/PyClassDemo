@@ -15,6 +15,10 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "classroom-demo-secret")
 
 def get_db_connection():
     """Connect to the PostgreSQL database container."""
+    # PSEUDO-CODE:
+    # 1. Read the database address, name, username, and password.
+    # 2. Open a connection to PostgreSQL.
+    # 3. Return that connection so a route can run SQL.
     return psycopg2.connect(
         host=os.environ.get("DATABASE_HOST", "localhost"),
         port=os.environ.get("DATABASE_PORT", "5432"),
@@ -31,6 +35,12 @@ def init_db():
     Docker Compose starts PostgreSQL in a separate "db" container, and the
     Flask "web" container connects to it using the DATABASE_* settings.
     """
+    # PSEUDO-CODE:
+    # 1. Make a list of fake classroom users.
+    # 2. Connect to PostgreSQL.
+    # 3. Create the users table if it is missing.
+    # 4. Create the submissions and messages tables if they are missing.
+    # 5. Insert the fake users only if they do not already exist.
     demo_users = [
         ("user1", "sunnydesk", "#f97316"),
         ("user2", "bluepencil", "#2563eb"),
@@ -89,6 +99,16 @@ def init_db():
                 );
                 """
             )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS messages (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    message TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
 
             # Classroom-only shortcut: plain-text passwords are not appropriate
             # for real apps. Production apps need password hashing and stronger
@@ -117,6 +137,10 @@ def wait_for_database():
 
 
 def current_user():
+    # PSEUDO-CODE:
+    # 1. Check the Flask session cookie for a saved user id.
+    # 2. If there is no user id, the visitor is not logged in.
+    # 3. If there is a user id, load that user row from PostgreSQL.
     if "user_id" not in session:
         return None
 
@@ -132,8 +156,20 @@ def current_user():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Show the login form and handle the fake classroom login."""
+    # PSEUDO-CODE:
+    # GET request:
+    #   Show the login page.
+    # POST request:
+    #   Read the username and password from the form.
+    #   Look for a matching fake user in PostgreSQL.
+    #   If found, remember the user id in the Flask session.
+    #   If not found, show a simple error message.
+    if current_user():
+        return redirect(url_for("dashboard"))
+
     error = None
 
+    # If information is sent to our login route, we will process the login
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
@@ -170,6 +206,12 @@ def logout():
 @app.route("/", methods=["GET", "POST"])
 def dashboard():
     """Main classroom page: browser form -> Flask route -> PostgreSQL."""
+    # PSEUDO-CODE:
+    # 1. Find out who is logged in.
+    # 2. If nobody is logged in, send them to /login.
+    # 3. If the layout form was submitted, insert one new submission row.
+    # 4. For a normal page load, count all submissions.
+    # 5. Render dashboard.html with the user and database values.
     user = current_user()
     if not user:
         return redirect(url_for("login"))
@@ -218,6 +260,11 @@ def dashboard():
 @app.route("/profile", methods=["POST"])
 def update_profile():
     """Update the student's fake profile row in PostgreSQL."""
+    # PSEUDO-CODE:
+    # 1. Find the logged-in student.
+    # 2. Read first name and favorite color from the form.
+    # 3. Update that student's row in the users table.
+    # 4. Redirect back to / so the refreshed page shows the new values.
     user = current_user()
     if not user:
         return redirect(url_for("login"))
@@ -247,6 +294,10 @@ def update_profile():
 
 @app.route("/submissions")
 def submissions():
+    # PSEUDO-CODE:
+    # 1. Make sure the visitor is logged in.
+    # 2. Join submissions to users so each row shows who submitted it.
+    # 3. Send the rows to submissions.html for display.
     user = current_user()
     if not user:
         return redirect(url_for("login"))
@@ -272,15 +323,72 @@ def submissions():
     return render_template("submissions.html", user=user, submissions=rows)
 
 
+@app.route("/chat", methods=["GET", "POST"])
+def chat():
+    """Show a simple classroom chat and save new messages."""
+    # PSEUDO-CODE:
+    # GET request:
+    #   Read recent messages from PostgreSQL.
+    #   Render chat.html so the browser can display them.
+    # POST request:
+    #   Read the message from the form.
+    #   Insert the message into PostgreSQL.
+    #   Redirect back to /chat, which causes a fresh GET request.
+    user = current_user()
+    if not user:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        message = request.form.get("message", "").strip()
+
+        if message:
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        INSERT INTO messages (user_id, message)
+                        VALUES (%s, %s);
+                        """,
+                        (user["id"], message),
+                    )
+
+        return redirect(url_for("chat"))
+
+    with get_db_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT messages.id,
+                       users.username,
+                       users.first_name,
+                       users.favorite_color,
+                       messages.message,
+                       messages.created_at
+                FROM messages
+                JOIN users ON messages.user_id = users.id
+                ORDER BY messages.created_at DESC
+                LIMIT 30;
+                """
+            )
+            rows = cur.fetchall()
+
+    return render_template("chat.html", user=user, messages=rows)
+
+
 @app.route("/reset-demo", methods=["POST"])
 def reset_demo():
     # Classroom reset only: this clears practice submissions between demos.
+    # PSEUDO-CODE:
+    # 1. Make sure a fake classroom user is logged in.
+    # 2. Delete all rows from submissions and messages.
+    # 3. Leave student names, colors, usernames, and passwords alone.
     if not current_user():
         return redirect(url_for("login"))
 
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("DELETE FROM submissions;")
+            cur.execute("DELETE FROM messages;")
 
     init_db()
     return redirect(url_for("dashboard"))
