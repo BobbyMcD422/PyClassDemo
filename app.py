@@ -39,8 +39,9 @@ def init_db():
     # 1. Make a list of fake classroom users.
     # 2. Connect to PostgreSQL.
     # 3. Create the users table if it is missing.
-    # 4. Create the submissions and messages tables if they are missing.
-    # 5. Insert the fake users only if they do not already exist.
+    # 4. Remove the old submissions table from an earlier version of the demo.
+    # 5. Create the messages table if it is missing.
+    # 6. Insert the fake users only if they do not already exist.
     demo_users = [
         ("user1", "sunnydesk", "#f97316"),
         ("user2", "bluepencil", "#2563eb"),
@@ -88,17 +89,9 @@ def init_db():
                 """
             )
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT NOT NULL DEFAULT '';")
-            cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS submissions (
-                    id SERIAL PRIMARY KEY,
-                    user_id INTEGER REFERENCES users(id),
-                    layout_choice TEXT NOT NULL,
-                    comment TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-                """
-            )
+            # This demo used to have a submissions table. Dropping it keeps the
+            # classroom database focused on the current chat example.
+            cur.execute("DROP TABLE IF EXISTS submissions;")
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS messages (
@@ -203,57 +196,27 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def dashboard():
-    """Main classroom page: browser form -> Flask route -> PostgreSQL."""
+    """Main classroom page: browser -> Flask route -> PostgreSQL -> HTML."""
     # PSEUDO-CODE:
     # 1. Find out who is logged in.
     # 2. If nobody is logged in, send them to /login.
-    # 3. If the layout form was submitted, insert one new submission row.
-    # 4. For a normal page load, count all submissions.
-    # 5. Render dashboard.html with the user and database values.
+    # 3. Count chat messages from PostgreSQL.
+    # 4. Render dashboard.html with the user and database values.
     user = current_user()
     if not user:
         return redirect(url_for("login"))
 
-    if request.method == "POST":
-        layout_choice = request.form.get("layout_choice", "Cards")
-        comment = request.form.get("comment", "").strip()
-
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    INSERT INTO submissions (user_id, layout_choice, comment)
-                    VALUES (%s, %s, %s);
-                    """,
-                    (user["id"], layout_choice, comment),
-                )
-
-        return redirect(url_for("dashboard"))
-
     with get_db_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT COUNT(*) AS total FROM submissions;")
-            vote_count = cur.fetchone()["total"]
-
-            cur.execute(
-                """
-                SELECT layout_choice, comment, created_at
-                FROM submissions
-                WHERE user_id = %s
-                ORDER BY created_at DESC
-                LIMIT 1;
-                """,
-                (user["id"],),
-            )
-            latest_submission = cur.fetchone()
+            cur.execute("SELECT COUNT(*) AS total FROM messages;")
+            message_count = cur.fetchone()["total"]
 
     return render_template(
         "dashboard.html",
         user=user,
-        vote_count=vote_count,
-        latest_submission=latest_submission,
+        message_count=message_count,
     )
 
 
@@ -290,37 +253,6 @@ def update_profile():
             )
 
     return redirect(url_for("dashboard"))
-
-
-@app.route("/submissions")
-def submissions():
-    # PSEUDO-CODE:
-    # 1. Make sure the visitor is logged in.
-    # 2. Join submissions to users so each row shows who submitted it.
-    # 3. Send the rows to submissions.html for display.
-    user = current_user()
-    if not user:
-        return redirect(url_for("login"))
-
-    with get_db_connection() as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(
-                """
-                SELECT submissions.id,
-                       users.username,
-                       users.first_name,
-                       users.favorite_color,
-                       submissions.layout_choice,
-                       submissions.comment,
-                       submissions.created_at
-                FROM submissions
-                JOIN users ON submissions.user_id = users.id
-                ORDER BY submissions.created_at DESC;
-                """
-            )
-            rows = cur.fetchall()
-
-    return render_template("submissions.html", user=user, submissions=rows)
 
 
 @app.route("/chat", methods=["GET", "POST"])
@@ -377,17 +309,16 @@ def chat():
 
 @app.route("/reset-demo", methods=["POST"])
 def reset_demo():
-    # Classroom reset only: this clears practice submissions between demos.
+    # Classroom reset only: this clears practice chat messages between demos.
     # PSEUDO-CODE:
     # 1. Make sure a fake classroom user is logged in.
-    # 2. Delete all rows from submissions and messages.
+    # 2. Delete all rows from messages.
     # 3. Leave student names, colors, usernames, and passwords alone.
     if not current_user():
         return redirect(url_for("login"))
 
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("DELETE FROM submissions;")
             cur.execute("DELETE FROM messages;")
 
     init_db()

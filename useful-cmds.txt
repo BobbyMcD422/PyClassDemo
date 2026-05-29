@@ -1,2 +1,8 @@
+Start App:
+python app.py | python ClassDemo/app.py
+
 See DB in Docker:
 psql -U demo -d demoapp
+
+See all Tables In DB (after previous CMD):
+\dt

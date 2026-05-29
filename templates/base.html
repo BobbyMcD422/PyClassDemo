@@ -13,7 +13,6 @@
       <nav>
         {% if session.get("user_id") %}
           <a href="{{ url_for('dashboard') }}">Dashboard</a>
-          <a href="{{ url_for('submissions') }}">Submissions</a>
           <a href="{{ url_for('chat') }}">Chat</a>
           <a href="{{ url_for('logout') }}">Log out</a>
         {% endif %}

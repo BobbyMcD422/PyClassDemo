@@ -76,13 +76,13 @@ docker compose down
 docker compose down -v
 ```
 
-`docker compose down -v` removes the PostgreSQL volume, so the saved submissions and chat messages disappear too.
+`docker compose down -v` removes the PostgreSQL volume, so the saved chat messages disappear too.
 
 ## What The Containers Do
 
 The `web` container runs Flask. Flask receives browser requests, talks to the database, and renders Jinja HTML templates.
 
-The `db` container runs PostgreSQL. It stores the fake users, class form submissions, and chat messages.
+The `db` container runs PostgreSQL. It stores the fake users and chat messages.
 
 The Docker network lets the `web` container talk to the `db` container using the hostname `db`.
 
@@ -90,7 +90,7 @@ Port `5000` lets your browser reach the Flask app. Docker maps `localhost:5000` 
 
 ## Classroom Reset
 
-After logging in, use the reset button on the dashboard to clear all submissions and chat messages. Student names, colors, usernames, and passwords stay in place. This is only for quickly resetting the demo between classes.
+After logging in, use the reset button on the dashboard to clear all chat messages. Student names, colors, usernames, and passwords stay in place. This is only for quickly resetting the demo between classes.
 
 ## Cloudflare Tunnel Note
 

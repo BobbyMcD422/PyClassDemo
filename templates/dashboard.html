@@ -22,19 +22,13 @@
   </div>
 
   <div class="stat-card">
-    <span>Selected layout</span>
-    <strong>
-      {% if latest_submission %}
-        {{ latest_submission.layout_choice }}
-      {% else %}
-        Not chosen yet
-      {% endif %}
-    </strong>
+    <span>Account</span>
+    <strong>{{ user.username }}</strong>
   </div>
 
   <div class="stat-card">
-    <span>Class votes submitted</span>
-    <strong>{{ vote_count }}</strong>
+    <span>Chat messages</span>
+    <strong>{{ message_count }}</strong>
   </div>
 </section>
 
@@ -52,22 +46,11 @@
     <button type="submit">Update my profile</button>
   </form>
 
-  <form class="card form-card" method="post" action="{{ url_for('dashboard') }}">
-    <h2>Submit a design choice</h2>
-    <p class="muted">This form sends data from the browser to Flask, then Flask saves it in PostgreSQL.</p>
-
-    <label for="layout_choice">Favorite layout</label>
-    <select id="layout_choice" name="layout_choice">
-      <option>Cards</option>
-      <option>List</option>
-      <option>Grid</option>
-    </select>
-
-    <label for="comment">Short fake comment</label>
-    <textarea id="comment" name="comment" rows="4" maxlength="160" placeholder="Example: Cards make the page easier to scan."></textarea>
-
-    <button type="submit">Save to PostgreSQL</button>
-  </form>
+  <section class="card lesson-card">
+    <h2>Open the chat demo</h2>
+    <p class="muted">Chat is the clearest place to see a POST request save data and a GET request load it back from PostgreSQL.</p>
+    <a class="button-link" href="{{ url_for('chat') }}">Go to chat</a>
+  </section>
 
   <aside class="card lesson-card">
     <h2>What is happening?</h2>
@@ -79,7 +62,7 @@
     </ol>
 
     <form method="post" action="{{ url_for('reset_demo') }}">
-      <button class="secondary-button" type="submit">Reset classroom submissions</button>
+      <button class="secondary-button" type="submit">Reset classroom chat</button>
     </form>
   </aside>
 </section>
