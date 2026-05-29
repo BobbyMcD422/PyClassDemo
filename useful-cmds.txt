@@ -1,0 +1,2 @@
+See DB in Docker:
+psql -U demo -d demoapp
