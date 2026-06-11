@@ -1,8 +1,13 @@
+import json
 import os
+import queue
+import socket
+import threading
 import time
 
+import docker
 import psycopg2
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, Response, redirect, render_template, request, session, stream_with_context, url_for
 from psycopg2.extras import RealDictCursor
 
 
@@ -144,6 +149,25 @@ def current_user():
                 (session["user_id"],),
             )
             return cur.fetchone()
+
+
+def compose_containers():
+    """Find the containers that belong to this Docker Compose project."""
+    client = docker.from_env()
+    this_container = client.containers.get(socket.gethostname())
+    project_name = this_container.labels.get("com.docker.compose.project")
+
+    if not project_name:
+        raise RuntimeError("The web app is not running as a Docker Compose service.")
+
+    containers = client.containers.list(
+        all=True,
+        filters={"label": f"com.docker.compose.project={project_name}"},
+    )
+    return sorted(
+        containers,
+        key=lambda container: container.labels.get("com.docker.compose.service", container.name),
+    )
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -305,6 +329,92 @@ def chat():
             rows = cur.fetchall()
 
     return render_template("chat.html", user=user, messages=rows)
+
+
+@app.route("/container-logs")
+def container_logs():
+    """Show live stdout and stderr from this app's Compose containers."""
+    user = current_user()
+    if not user:
+        return redirect(url_for("login"))
+
+    return render_template("container_logs.html", user=user)
+
+
+@app.route("/container-logs/stream")
+def container_logs_stream():
+    """Stream Docker log lines to the browser as Server-Sent Events."""
+    if not current_user():
+        return Response("Log in to view container output.", status=401)
+
+    def generate_events():
+        messages = queue.Queue()
+        stop_event = threading.Event()
+        streams = []
+
+        def read_logs(container):
+            service = container.labels.get("com.docker.compose.service", container.name)
+
+            try:
+                log_stream = container.logs(
+                    stream=True,
+                    follow=True,
+                    tail=80,
+                    timestamps=True,
+                )
+                streams.append(log_stream)
+
+                for line in log_stream:
+                    if stop_event.is_set():
+                        break
+                    messages.put(
+                        {
+                            "service": service,
+                            "message": line.decode("utf-8", errors="replace").rstrip(),
+                        }
+                    )
+            except Exception as error:
+                messages.put(
+                    {
+                        "service": service,
+                        "message": f"Unable to read logs: {error}",
+                    }
+                )
+
+        try:
+            containers = compose_containers()
+
+            yield "retry: 3000\n\n"
+            yield f"event: ready\ndata: {json.dumps({'containers': len(containers)})}\n\n"
+
+            for container in containers:
+                thread = threading.Thread(target=read_logs, args=(container,), daemon=True)
+                thread.start()
+
+            while True:
+                try:
+                    message = messages.get(timeout=15)
+                    yield f"data: {json.dumps(message)}\n\n"
+                except queue.Empty:
+                    yield ": keep-alive\n\n"
+        except Exception as error:
+            payload = {"service": "viewer", "message": f"Unable to connect to Docker: {error}"}
+            yield f"event: viewer-error\ndata: {json.dumps(payload)}\n\n"
+        finally:
+            stop_event.set()
+            for log_stream in streams:
+                close = getattr(log_stream, "close", None)
+                if close:
+                    close()
+
+    return Response(
+        stream_with_context(generate_events()),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @app.route("/reset-demo", methods=["POST"])

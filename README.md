@@ -1,6 +1,6 @@
 # Classroom Full-Stack Demo
 
-This is a small high school HTML/CSS design class demo. It shows the path:
+This is a small classroom demo for Python students. It shows the path:
 
 ```text
 Browser -> Flask container -> PostgreSQL container -> generated HTML -> browser
@@ -65,6 +65,17 @@ POST /chat -> Flask saves a new message, then redirects back to GET /chat
 ```
 
 This is meant to make browser requests, backend routes, database rows, and generated HTML visible in one classroom-friendly flow.
+
+## Live Container Logs
+
+After logging in, open **Container logs** in the navigation. The page streams
+recent and live output from the `web` and `db` containers, including Flask
+requests and PostgreSQL messages.
+
+This feature mounts `/var/run/docker.sock` into the web container. Docker socket
+access is highly privileged, so this setup is for a trusted local classroom demo
+only. Do not expose this version of the app to untrusted users or deploy it as a
+public production service.
 
 ## Useful Docker Commands
 
