@@ -9,7 +9,7 @@
     <h1>{{ user.first_name or user.username }}</h1>
     <p>
       Signed in as <strong>{{ user.username }}</strong>. This page was generated
-      by Flask after reading your fake account from PostgreSQL.
+      by Flask after SQLAlchemy loaded your User model from PostgreSQL.
     </p>
   </div>
 
@@ -35,7 +35,7 @@
 <section class="content-grid">
   <form class="card form-card" method="post" action="{{ url_for('update_profile') }}">
     <h2>Personalize your dashboard</h2>
-    <p class="muted">This updates your row in the users table, then reloads the page.</p>
+    <p class="muted">This updates your User model through SQLAlchemy, then reloads the page.</p>
 
     <label for="first_name">First name</label>
     <input id="first_name" name="first_name" type="text" maxlength="40" value="{{ user.first_name }}" placeholder="Example: Jordan" required>
@@ -48,7 +48,7 @@
 
   <section class="card lesson-card">
     <h2>Open the chat demo</h2>
-    <p class="muted">Chat is the clearest place to see a POST request save data and a GET request load it back from PostgreSQL.</p>
+    <p class="muted">Chat shows a POST request creating a Message model and a GET request loading models back through SQLAlchemy.</p>
     <a class="button-link" href="{{ url_for('chat') }}">Go to chat</a>
   </section>
 
@@ -57,7 +57,7 @@
     <ol>
       <li>The browser opens <strong>localhost:5000</strong>.</li>
       <li>Docker sends that request to the Flask web container.</li>
-      <li>Flask reads and writes rows in the PostgreSQL db container.</li>
+      <li>Flask-SQLAlchemy turns Python model operations into database work.</li>
       <li>Jinja turns the result into HTML for the browser.</li>
     </ol>
 

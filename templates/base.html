@@ -14,7 +14,7 @@
         {% if session.get("user_id") %}
           <a href="{{ url_for('dashboard') }}">Dashboard</a>
           <a href="{{ url_for('chat') }}">Chat</a>
-          <a href="{{ url_for('container_logs') }}">Container logs</a>
+          <a href="{{ url_for('activity_log') }}">Python activity</a>
           <a href="{{ url_for('logout') }}">Log out</a>
         {% endif %}
       </nav>

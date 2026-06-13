@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Python Activity - Python Class Demo{% endblock %}
+
+{% block content %}
+<section class="page-heading activity-heading">
+  <div>
+    <p class="eyebrow">Live Python output</p>
+    <h1>Application activity</h1>
+    <p>
+      These messages are created by <strong>classroom_app/activity.py</strong> when students
+      log in or visit a route from <strong>app.py</strong>.
+    </p>
+  </div>
+
+  <div class="activity-actions">
+    <span id="activity-status" class="activity-status">Connecting...</span>
+    <button id="clear-activity" class="secondary-button" type="button">Clear screen</button>
+  </div>
+</section>
+
+<section class="terminal-card" aria-label="Live Python activity">
+  <div class="terminal-toolbar">
+    <span>Python activity feed</span>
+    <label class="follow-control">
+      <input id="follow-activity" type="checkbox" checked>
+      Follow newest activity
+    </label>
+  </div>
+  <div id="activity-output" class="terminal-output" role="log" aria-live="polite"></div>
+</section>
+
+<script>
+  const output = document.getElementById("activity-output");
+  const status = document.getElementById("activity-status");
+  const followActivity = document.getElementById("follow-activity");
+  const maxLines = 200;
+
+  function addActivity(entry) {
+    const line = document.createElement("div");
+    line.className = "activity-line";
+
+    const timestamp = document.createElement("span");
+    timestamp.className = "activity-time";
+    timestamp.textContent = entry.time;
+
+    const message = document.createElement("span");
+    message.className = "activity-message";
+    message.textContent = entry.message;
+
+    line.append(timestamp, message);
+    output.appendChild(line);
+
+    while (output.children.length > maxLines) {
+      output.firstElementChild.remove();
+    }
+
+    if (followActivity.checked) {
+      output.scrollTop = output.scrollHeight;
+    }
+  }
+
+  const events = new EventSource("{{ url_for('activity_stream') }}");
+
+  events.addEventListener("ready", () => {
+    status.textContent = "Live";
+    status.classList.add("is-live");
+  });
+
+  events.onmessage = (event) => {
+    addActivity(JSON.parse(event.data));
+  };
+
+  events.onerror = () => {
+    status.textContent = "Reconnecting...";
+    status.classList.remove("is-live");
+  };
+
+  document.getElementById("clear-activity").addEventListener("click", () => {
+    output.replaceChildren();
+  });
+</script>
+{% endblock %}

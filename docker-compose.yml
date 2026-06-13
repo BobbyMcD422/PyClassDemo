@@ -10,9 +10,6 @@ services:
       DATABASE_USER: demo
       DATABASE_PASSWORD: demo
       PYTHONUNBUFFERED: "1"
-    volumes:
-      # Classroom demo only: this lets the webpage read container output.
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - db
 

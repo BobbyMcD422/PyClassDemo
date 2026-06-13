@@ -337,32 +337,32 @@ th {
   margin-top: 22px;
 }
 
-.logs-heading {
+.activity-heading {
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: 24px;
 }
 
-.log-actions {
+.activity-actions {
   display: flex;
   align-items: center;
   gap: 14px;
   flex: 0 0 auto;
 }
 
-.log-actions button {
+.activity-actions button {
   width: auto;
   margin: 0;
 }
 
-.log-status {
+.activity-status {
   color: var(--muted);
   font-size: 0.9rem;
   font-weight: 700;
 }
 
-.log-status.is-live {
+.activity-status.is-live {
   color: var(--success);
 }
 
@@ -386,19 +386,6 @@ th {
   font-size: 0.86rem;
 }
 
-.service-dot {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  margin-right: 6px;
-  border-radius: 50%;
-  background: #60a5fa;
-}
-
-.service-db {
-  background: #f59e0b;
-}
-
 .follow-control {
   display: flex;
   align-items: center;
@@ -420,32 +407,24 @@ th {
   font: 0.86rem/1.55 Consolas, "Courier New", monospace;
 }
 
-.log-line {
+.activity-line {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
+  grid-template-columns: 82px minmax(0, 1fr);
   gap: 12px;
   padding: 2px 16px;
 }
 
-.log-line:hover {
+.activity-line:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.log-service {
-  color: #60a5fa;
+.activity-time {
+  color: #93c5fd;
   font-weight: 800;
   text-align: right;
 }
 
-.log-db .log-service {
-  color: #fbbf24;
-}
-
-.log-viewer .log-service {
-  color: #fb7185;
-}
-
-.log-message {
+.activity-message {
   min-width: 0;
   color: #e2e8f0;
   overflow-wrap: anywhere;
@@ -494,7 +473,7 @@ th {
     grid-column: span 1;
   }
 
-  .logs-heading {
+  .activity-heading {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -509,8 +488,8 @@ th {
     margin-left: 0;
   }
 
-  .log-line {
-    grid-template-columns: 52px minmax(0, 1fr);
+  .activity-line {
+    grid-template-columns: 68px minmax(0, 1fr);
     gap: 8px;
     padding-inline: 10px;
   }

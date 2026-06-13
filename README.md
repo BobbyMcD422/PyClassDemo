@@ -3,7 +3,7 @@
 This is a small classroom demo for Python students. It shows the path:
 
 ```text
-Browser -> Flask container -> PostgreSQL container -> generated HTML -> browser
+Browser -> Flask -> Flask-SQLAlchemy -> PostgreSQL -> generated HTML -> browser
 ```
 
 It is intentionally simple. The login uses fake classroom accounts only, and the passwords are stored in plain text so students can read the code easily. Real apps should never expose secrets in files like this and should never store plain-text passwords.
@@ -55,27 +55,39 @@ user29 / magentalink
 user30 / brownshape
 ```
 
-After students log in, they can enter their first name and choose a favorite color. That updates their row in PostgreSQL and refreshes the dashboard.
+After students log in, they can enter their first name and choose a favorite
+color. Flask-SQLAlchemy updates their `User` model and refreshes the dashboard.
 
 The app also includes a simple chat page:
 
 ```text
-GET /chat  -> Flask reads messages from PostgreSQL and renders chat.html
-POST /chat -> Flask saves a new message, then redirects back to GET /chat
+GET /chat  -> SQLAlchemy loads Message models and Flask renders chat.html
+POST /chat -> Flask creates a Message model and SQLAlchemy saves it
 ```
 
 This is meant to make browser requests, backend routes, database rows, and generated HTML visible in one classroom-friendly flow.
 
-## Live Container Logs
+## Database Abstraction
 
-After logging in, open **Container logs** in the navigation. The page streams
-recent and live output from the `web` and `db` containers, including Flask
-requests and PostgreSQL messages.
+The Python code uses **Flask-SQLAlchemy** instead of handwritten SQL. The
+`User` and `Message` classes describe the data, while package methods such as
+`db.select()`, `db.session.add()`, and `db.session.commit()` handle PostgreSQL.
 
-This feature mounts `/var/run/docker.sock` into the web container. Docker socket
-access is highly privileged, so this setup is for a trusted local classroom demo
-only. Do not expose this version of the app to untrusted users or deploy it as a
-public production service.
+## Python Modules
+
+- `app.py` contains the routes and starts the server.
+- `classroom_app/application.py` configures Flask and connects extensions.
+- `classroom_app/models.py` contains the `User` and `Message` database models.
+- `classroom_app/database.py` creates tables, seeds users, and waits for PostgreSQL.
+- `classroom_app/activity.py` records activity and registers automatic page-visit logging.
+- `classroom_app/extensions.py` provides the shared Flask-SQLAlchemy object.
+
+## Live Python Activity
+
+After logging in, open **Python activity** in the navigation. The page streams
+messages created by `classroom_app/activity.py`, such as `Jordan logged in` and
+`Jordan visited the chat page`. This gives students a simple view of Python code
+reacting to browser requests.
 
 ## Useful Docker Commands
 
