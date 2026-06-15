@@ -23,18 +23,11 @@ def current_user():
 
 def activity_user_name():
     """Return the student's first name, or their username if none is set."""
-    cached_name = session.get("activity_name") or session.get("username")
-    if cached_name:
-        return cached_name
-
     user = current_user()
     if not user:
         return "Unknown user"
 
-    name = user.first_name or user.username
-    session["username"] = user.username
-    session["activity_name"] = name
-    return name
+    return user.first_name or user.username
 
 
 def record_activity(message):

@@ -36,8 +36,6 @@ def login():
 
         if user:
             session["user_id"] = user.id
-            session["username"] = user.username
-            session["activity_name"] = user.first_name or user.username
             record_activity(f"{activity_user_name()} logged in")
             return redirect(url_for("dashboard"))
 
@@ -89,7 +87,6 @@ def update_profile():
     user.favorite_color = favorite_color
     db.session.commit()
 
-    session["activity_name"] = first_name
     return redirect(url_for("dashboard"))
 
 
