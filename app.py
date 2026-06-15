@@ -83,9 +83,16 @@ def update_profile():
     if not favorite_color.startswith("#") or len(favorite_color) != 7:
         favorite_color = "#2563eb"
 
+    old_favorite_color = user.favorite_color
     user.first_name = first_name
     user.favorite_color = favorite_color
     db.session.commit()
+
+    if favorite_color != old_favorite_color:
+        record_activity(
+            f"{activity_user_name()} changed their favorite color "
+            f"from {old_favorite_color} to {favorite_color}"
+        )
 
     return redirect(url_for("dashboard"))
 
@@ -103,6 +110,7 @@ def chat():
         if message:
             db.session.add(Message(user=user, message=message))
             db.session.commit()
+            record_activity(f"{activity_user_name()} posted a chat message")
 
         return redirect(url_for("chat"))
 
