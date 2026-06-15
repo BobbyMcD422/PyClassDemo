@@ -21,6 +21,17 @@
     </header>
 
     <main class="page-shell">
+      {% if route_lesson %}
+        <aside class="route-banner" aria-label="How this page was created">
+          <span class="route-banner-label">This page ran</span>
+          <code>URL {{ route_lesson.url }}</code>
+          <span class="route-arrow" aria-hidden="true">→</span>
+          <code>Python {{ route_lesson.function }}</code>
+          <span class="route-arrow" aria-hidden="true">→</span>
+          <code>Template {{ route_lesson.template }}</code>
+        </aside>
+      {% endif %}
+
       {% block content %}{% endblock %}
     </main>
   </body>

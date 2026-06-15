@@ -4,6 +4,7 @@ from flask import Flask
 
 from classroom_app.activity import register_activity_logging
 from classroom_app.extensions import db
+from classroom_app.teaching import register_teaching_banner
 
 
 def create_app():
@@ -29,4 +30,5 @@ def create_app():
 
     db.init_app(app)
     register_activity_logging(app)
+    register_teaching_banner(app)
     return app

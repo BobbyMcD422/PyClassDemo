@@ -81,6 +81,7 @@ The Python code uses **Flask-SQLAlchemy** instead of handwritten SQL. The
 - `classroom_app/database.py` creates tables, seeds users, and waits for PostgreSQL.
 - `classroom_app/activity.py` records activity and registers automatic page-visit logging.
 - `classroom_app/extensions.py` provides the shared Flask-SQLAlchemy object.
+- `classroom_app/teaching.py` supplies the visible URL-to-function teaching banner.
 
 ## Live Python Activity
 
